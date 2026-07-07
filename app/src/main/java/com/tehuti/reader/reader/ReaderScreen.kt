@@ -31,11 +31,16 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.commitNow
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.tehuti.reader.domain.model.AppTheme
 import com.tehuti.reader.reader.overlay.ReaderChrome
+import com.tehuti.reader.settings.SettingsViewModel
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.OverflowableNavigator
+import org.readium.r2.navigator.epub.EpubNavigatorFragment
+import org.readium.r2.navigator.epub.EpubPreferences
 import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.input.TapEvent
+import org.readium.r2.navigator.preferences.Theme as ReadiumTheme
 
 @Composable
 fun ReaderScreen(
@@ -86,9 +91,12 @@ private fun ReaderContent(
 ) {
     val containerId = rememberSaveable { View.generateViewId() }
     var navigator by remember { mutableStateOf<OverflowableNavigator?>(null) }
+    var epubNavigator by remember { mutableStateOf<EpubNavigatorFragment?>(null) }
     var chromeVisible by remember { mutableStateOf(false) }
     var progression by remember { mutableFloatStateOf(0f) }
     val coroutineScope = rememberCoroutineScope()
+    val settingsViewModel: SettingsViewModel = hiltViewModel()
+    val settings by settingsViewModel.settings.collectAsState()
 
     BackHandler {
         if (chromeVisible) chromeVisible = false else onBack()
@@ -108,6 +116,7 @@ private fun ReaderContent(
             fragment = fm.findFragmentById(containerId)
         }
         navigator = fragment as? OverflowableNavigator
+        epubNavigator = fragment as? EpubNavigatorFragment
     }
 
     DisposableEffect(Unit) {
@@ -138,6 +147,21 @@ private fun ReaderContent(
             progression = locator.locations.totalProgression?.toFloat() ?: 0f
             viewModel.onLocatorChanged(locator)
         }
+    }
+
+    LaunchedEffect(epubNavigator, settings) {
+        val epub = epubNavigator ?: return@LaunchedEffect
+        epub.submitPreferences(
+            EpubPreferences(
+                fontFamily = org.readium.r2.navigator.preferences.FontFamily(settings.fontFamily.cssValue),
+                fontSize = settings.fontSizePercent / 100.0,
+                theme = when (settings.theme) {
+                    AppTheme.LIGHT -> ReadiumTheme.LIGHT
+                    AppTheme.DARK -> ReadiumTheme.DARK
+                    AppTheme.SEPIA -> ReadiumTheme.SEPIA
+                },
+            ),
+        )
     }
 
     if (chromeVisible) {

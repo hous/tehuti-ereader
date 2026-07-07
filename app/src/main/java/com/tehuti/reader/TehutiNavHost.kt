@@ -8,10 +8,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.tehuti.reader.library.LibraryScreen
 import com.tehuti.reader.reader.ReaderScreen
+import com.tehuti.reader.settings.SettingsScreen
 
 object TehutiDestinations {
     const val LIBRARY = "library"
     const val READER = "reader/{bookId}"
+    const val SETTINGS = "settings"
 
     fun reader(bookId: String) = "reader/$bookId"
 }
@@ -26,6 +28,7 @@ fun TehutiNavHost() {
         composable(TehutiDestinations.LIBRARY) {
             LibraryScreen(
                 onBookClick = { bookId -> navController.navigate(TehutiDestinations.reader(bookId)) },
+                onSettingsClick = { navController.navigate(TehutiDestinations.SETTINGS) },
             )
         }
         composable(
@@ -34,7 +37,12 @@ fun TehutiNavHost() {
         ) {
             ReaderScreen(
                 onBack = { navController.popBackStack() },
-                onSettings = { },
+                onSettings = { navController.navigate(TehutiDestinations.SETTINGS) },
+            )
+        }
+        composable(TehutiDestinations.SETTINGS) {
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
             )
         }
     }

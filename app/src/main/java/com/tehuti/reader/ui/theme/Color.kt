@@ -9,3 +9,7 @@ val TehutiAccentLight = Color(0xFF6B5842)
 val TehutiInkDark = Color(0xFFE4E1E9)
 val TehutiPaperDark = Color(0xFF131316)
 val TehutiAccentDark = Color(0xFFD3B48C)
+
+val TehutiInkSepia = Color(0xFF3D2B1F)
+val TehutiPaperSepia = Color(0xFFF4ECD8)
+val TehutiAccentSepia = Color(0xFF8B6F47)
