@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import com.tehuti.reader.data.local.BookDao
 import com.tehuti.reader.data.local.BookEntity
+import com.tehuti.reader.data.local.BookWithProgression
 import com.tehuti.reader.domain.model.Book
 import com.tehuti.reader.domain.model.BookFormat
 import com.tehuti.reader.domain.repo.LibraryRepository
@@ -25,7 +26,7 @@ class LibraryRepositoryImpl @Inject constructor(
 ) : LibraryRepository {
 
     override fun observeBooks(): Flow<List<Book>> =
-        bookDao.observeAll().map { entities -> entities.map { it.toDomain() } }
+        bookDao.observeAllWithProgression().map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun rescan(treeUri: Uri) = withContext(Dispatchers.IO) {
         val root = booksDirectoryAccess.documentFileFor(treeUri) ?: return@withContext
@@ -67,11 +68,12 @@ class LibraryRepositoryImpl @Inject constructor(
     }
 }
 
-private fun BookEntity.toDomain(): Book = Book(
-    id = id,
-    sourceUri = sourceUri,
-    format = BookFormat.valueOf(format),
-    title = title,
-    author = author,
-    coverPath = coverPath,
+private fun BookWithProgression.toDomain(): Book = Book(
+    id = book.id,
+    sourceUri = book.sourceUri,
+    format = BookFormat.valueOf(book.format),
+    title = book.title,
+    author = book.author,
+    coverPath = book.coverPath,
+    progression = progression,
 )

@@ -136,6 +136,7 @@ private fun ReaderContent(
         })
         nav.currentLocator.collect { locator ->
             progression = locator.locations.totalProgression?.toFloat() ?: 0f
+            viewModel.onLocatorChanged(locator)
         }
     }
 

@@ -8,11 +8,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tehuti.reader.data.books.PublicationFactory
 import com.tehuti.reader.data.local.BookDao
+import com.tehuti.reader.domain.model.ReadingPosition
+import com.tehuti.reader.domain.repo.PositionRepository
 import com.tehuti.reader.reader.format.ReaderEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.positions
@@ -33,6 +36,7 @@ sealed interface ReaderUiState {
 class ReaderViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val bookDao: BookDao,
+    private val positionRepository: PositionRepository,
     private val publicationFactory: PublicationFactory,
     private val readerEngine: ReaderEngine,
 ) : ViewModel() {
@@ -53,9 +57,14 @@ class ReaderViewModel @Inject constructor(
                 return@launch
             }
             publication = pub
+            bookDao.updateLastOpenedAt(bookId, System.currentTimeMillis())
+
+            val savedLocator = positionRepository.getPosition(bookId)
+                ?.let { runCatching { Locator.fromJSON(JSONObject(it.locatorJson)) }.getOrNull() }
+
             _uiState.value = ReaderUiState.Ready(
                 fragmentClass = readerEngine.fragmentClass,
-                fragmentFactory = readerEngine.createFragmentFactory(pub, null),
+                fragmentFactory = readerEngine.createFragmentFactory(pub, savedLocator),
                 title = pub.metadata.title ?: book.title,
             )
         }
@@ -66,6 +75,18 @@ class ReaderViewModel @Inject constructor(
         val positions = positionsCache ?: pub.positions().also { positionsCache = it }
         return positions.minByOrNull { locator ->
             abs((locator.locations.totalProgression ?: 0.0) - fraction)
+        }
+    }
+
+    fun onLocatorChanged(locator: Locator) {
+        viewModelScope.launch {
+            positionRepository.savePosition(
+                ReadingPosition(
+                    bookId = bookId,
+                    locatorJson = locator.toJSON().toString(),
+                    progression = locator.locations.totalProgression?.toFloat() ?: 0f,
+                ),
+            )
         }
     }
 

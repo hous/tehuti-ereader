@@ -31,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.tehuti.reader.domain.model.Book
 import java.io.File
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -132,6 +133,12 @@ private fun BookGridItem(book: Book, onClick: () -> Unit) {
         )
         book.author?.let {
             Text(text = it, style = MaterialTheme.typography.bodyLarge)
+        }
+        book.progression?.let {
+            Text(
+                text = "${(it * 100).roundToInt()}% read",
+                style = MaterialTheme.typography.bodyLarge,
+            )
         }
     }
 }
