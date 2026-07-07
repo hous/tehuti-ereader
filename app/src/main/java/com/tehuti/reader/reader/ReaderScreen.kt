@@ -168,6 +168,9 @@ private fun ReaderContent(
             EpubPreferences(
                 fontFamily = org.readium.r2.navigator.preferences.FontFamily(settings.fontFamily.cssValue),
                 fontSize = settings.fontSizePercent / 100.0,
+                // Force Readium's CSS to win over the publisher's stylesheet — otherwise
+                // books that ship their own font-size rules ignore our size preference.
+                publisherStyles = false,
                 theme = when (settings.theme) {
                     AppTheme.LIGHT -> ReadiumTheme.LIGHT
                     AppTheme.DARK -> ReadiumTheme.DARK
