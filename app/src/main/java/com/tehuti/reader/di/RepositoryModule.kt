@@ -2,6 +2,8 @@ package com.tehuti.reader.di
 
 import com.tehuti.reader.data.books.LibraryRepositoryImpl
 import com.tehuti.reader.domain.repo.LibraryRepository
+import com.tehuti.reader.reader.format.EpubEngine
+import com.tehuti.reader.reader.format.ReaderEngine
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -15,4 +17,7 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindLibraryRepository(impl: LibraryRepositoryImpl): LibraryRepository
+
+    @Binds
+    abstract fun bindReaderEngine(impl: EpubEngine): ReaderEngine
 }

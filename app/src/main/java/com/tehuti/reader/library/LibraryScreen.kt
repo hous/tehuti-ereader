@@ -2,6 +2,7 @@ package com.tehuti.reader.library
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -34,6 +35,7 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(
+    onBookClick: (String) -> Unit,
     viewModel: LibraryViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -98,7 +100,7 @@ fun LibraryScreen(
                             contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp),
                         ) {
                             items(uiState.books, key = { it.id }) { book ->
-                                BookGridItem(book)
+                                BookGridItem(book, onClick = { onBookClick(book.id) })
                             }
                         }
                     }
@@ -109,8 +111,10 @@ fun LibraryScreen(
 }
 
 @Composable
-private fun BookGridItem(book: Book) {
-    Column(modifier = Modifier.padding(12.dp)) {
+private fun BookGridItem(book: Book, onClick: () -> Unit) {
+    Column(modifier = Modifier
+        .padding(12.dp)
+        .clickable(onClick = onClick)) {
         AsyncImage(
             model = book.coverPath?.let(::File),
             contentDescription = book.title,

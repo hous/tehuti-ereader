@@ -71,6 +71,8 @@ dependencies {
 
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.documentfile)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.timber)
 
     implementation(libs.retrofit)
     implementation(libs.retrofit.kotlinx.serialization.converter)
