@@ -2,8 +2,10 @@ package com.tehuti.reader.di
 
 import com.tehuti.reader.data.books.LibraryRepositoryImpl
 import com.tehuti.reader.data.books.PositionRepositoryImpl
+import com.tehuti.reader.data.lookup.LookupRepositoryImpl
 import com.tehuti.reader.data.prefs.SettingsRepositoryImpl
 import com.tehuti.reader.domain.repo.LibraryRepository
+import com.tehuti.reader.domain.repo.LookupRepository
 import com.tehuti.reader.domain.repo.PositionRepository
 import com.tehuti.reader.domain.repo.SettingsRepository
 import com.tehuti.reader.reader.format.EpubEngine
@@ -29,6 +31,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindSettingsRepository(impl: SettingsRepositoryImpl): SettingsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindLookupRepository(impl: LookupRepositoryImpl): LookupRepository
 
     @Binds
     abstract fun bindReaderEngine(impl: EpubEngine): ReaderEngine

@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tehuti.reader.data.books.PublicationFactory
 import com.tehuti.reader.data.local.BookDao
+import com.tehuti.reader.domain.model.LookupType
 import com.tehuti.reader.domain.model.ReadingPosition
 import com.tehuti.reader.domain.repo.PositionRepository
 import com.tehuti.reader.reader.format.ReaderEngine
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import org.readium.r2.navigator.SelectableNavigator
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.positions
@@ -32,6 +34,8 @@ sealed interface ReaderUiState {
     data object Error : ReaderUiState
 }
 
+data class LookupRequest(val type: LookupType, val word: String)
+
 @HiltViewModel
 class ReaderViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -44,9 +48,13 @@ class ReaderViewModel @Inject constructor(
     private val bookId: String = checkNotNull(savedStateHandle["bookId"])
     private var publication: Publication? = null
     private var positionsCache: List<Locator>? = null
+    private var selectableNavigator: SelectableNavigator? = null
 
     private val _uiState = MutableStateFlow<ReaderUiState>(ReaderUiState.Loading)
     val uiState: StateFlow<ReaderUiState> = _uiState
+
+    private val _lookupRequest = MutableStateFlow<LookupRequest?>(null)
+    val lookupRequest: StateFlow<LookupRequest?> = _lookupRequest
 
     init {
         viewModelScope.launch {
@@ -64,9 +72,26 @@ class ReaderViewModel @Inject constructor(
 
             _uiState.value = ReaderUiState.Ready(
                 fragmentClass = readerEngine.fragmentClass,
-                fragmentFactory = readerEngine.createFragmentFactory(pub, savedLocator),
+                fragmentFactory = readerEngine.createFragmentFactory(pub, savedLocator, ::onSelectionAction),
                 title = pub.metadata.title ?: book.title,
             )
+        }
+    }
+
+    fun attachNavigator(navigator: SelectableNavigator?) {
+        selectableNavigator = navigator
+    }
+
+    fun clearLookupRequest() {
+        _lookupRequest.value = null
+    }
+
+    private fun onSelectionAction(type: LookupType) {
+        viewModelScope.launch {
+            val word = selectableNavigator?.currentSelection()?.locator?.text?.highlight?.trim()
+            if (!word.isNullOrBlank()) {
+                _lookupRequest.value = LookupRequest(type, word)
+            }
         }
     }
 

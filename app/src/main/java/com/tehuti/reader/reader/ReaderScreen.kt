@@ -32,10 +32,12 @@ import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.commitNow
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tehuti.reader.domain.model.AppTheme
+import com.tehuti.reader.reader.lookup.WordLookupDialog
 import com.tehuti.reader.reader.overlay.ReaderChrome
 import com.tehuti.reader.settings.SettingsViewModel
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.OverflowableNavigator
+import org.readium.r2.navigator.SelectableNavigator
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.epub.EpubPreferences
 import org.readium.r2.navigator.input.InputListener
@@ -117,6 +119,7 @@ private fun ReaderContent(
         }
         navigator = fragment as? OverflowableNavigator
         epubNavigator = fragment as? EpubNavigatorFragment
+        viewModel.attachNavigator(fragment as? SelectableNavigator)
     }
 
     DisposableEffect(Unit) {
@@ -175,6 +178,15 @@ private fun ReaderContent(
                     if (locator != null) navigator?.go(locator, true)
                 }
             },
+        )
+    }
+
+    val lookupRequest by viewModel.lookupRequest.collectAsState()
+    lookupRequest?.let { request ->
+        WordLookupDialog(
+            type = request.type,
+            word = request.word,
+            onDismiss = viewModel::clearLookupRequest,
         )
     }
 }
