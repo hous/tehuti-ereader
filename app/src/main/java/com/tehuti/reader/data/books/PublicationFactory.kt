@@ -22,9 +22,11 @@ class PublicationFactory @Inject constructor(
     private val publicationParser = DefaultPublicationParser(context, httpClient, assetRetriever, null, emptyList())
     private val publicationOpener = PublicationOpener(publicationParser, emptyList()) { }
 
-    suspend fun open(uri: Uri): Publication? {
+    suspend fun open(uri: Uri): Publication? = try {
         val url = AbsoluteUrl(uri.toString()) ?: return null
         val asset = assetRetriever.retrieve(url, FormatHints()).getOrNull() ?: return null
-        return publicationOpener.open(asset, null, false, { }, null).getOrNull()
+        publicationOpener.open(asset, null, false, { }, null).getOrNull()
+    } catch (e: Exception) {
+        null
     }
 }

@@ -43,20 +43,35 @@ class LibraryRepositoryImpl @Inject constructor(
 
         val newEntries = scannedIds.filterKeys { it !in existingIds }
         for ((id, file) in newEntries) {
-            val metadata = metadataExtractor.extract(file.uri)
-            val coverPath = metadata?.cover?.let { saveCover(id, it) }
-            bookDao.upsert(
-                BookEntity(
-                    id = id,
-                    sourceUri = file.uri.toString(),
-                    format = BookFormat.EPUB.name,
-                    title = metadata?.title ?: file.name?.substringBeforeLast('.') ?: "Untitled",
-                    author = metadata?.author,
-                    coverPath = coverPath,
-                    addedAt = System.currentTimeMillis(),
-                    lastOpenedAt = null,
-                ),
-            )
+            try {
+                val metadata = metadataExtractor.extract(file.uri)
+                val coverPath = metadata?.cover?.let { saveCover(id, it) }
+                bookDao.upsert(
+                    BookEntity(
+                        id = id,
+                        sourceUri = file.uri.toString(),
+                        format = BookFormat.EPUB.name,
+                        title = metadata?.title ?: file.name?.substringBeforeLast('.') ?: "Untitled",
+                        author = metadata?.author,
+                        coverPath = coverPath,
+                        addedAt = System.currentTimeMillis(),
+                        lastOpenedAt = null,
+                    ),
+                )
+            } catch (e: Exception) {
+                bookDao.upsert(
+                    BookEntity(
+                        id = id,
+                        sourceUri = file.uri.toString(),
+                        format = BookFormat.EPUB.name,
+                        title = file.name?.substringBeforeLast('.') ?: "Untitled",
+                        author = null,
+                        coverPath = null,
+                        addedAt = System.currentTimeMillis(),
+                        lastOpenedAt = null,
+                    ),
+                )
+            }
         }
     }
 

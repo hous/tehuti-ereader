@@ -20,7 +20,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class LibraryUiState(
-    val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val hasBooksFolder: Boolean = false,
     val books: List<Book> = emptyList(),
@@ -41,12 +40,12 @@ class LibraryViewModel @Inject constructor(
         .flatMapLatest { treeUri ->
             currentTreeUri = treeUri
             if (treeUri == null) {
-                flowOf(LibraryUiState(isLoading = false, hasBooksFolder = false))
+                flowOf(LibraryUiState(hasBooksFolder = false))
             } else {
+                isRefreshing.value = true
                 viewModelScope.launch { rescan(treeUri) }
                 libraryRepository.observeBooks().combine(isRefreshing) { books, refreshing ->
                     LibraryUiState(
-                        isLoading = false,
                         isRefreshing = refreshing,
                         hasBooksFolder = true,
                         books = books,

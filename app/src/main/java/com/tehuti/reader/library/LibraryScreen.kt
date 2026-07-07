@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -95,7 +96,20 @@ fun LibraryScreen(
                         .fillMaxSize()
                         .padding(paddingValues),
                 ) {
-                    if (uiState.books.isEmpty()) {
+                    if (uiState.books.isEmpty() && uiState.isRefreshing) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            CircularProgressIndicator()
+                            Text(
+                                text = "Scanning your library…",
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(top = 16.dp),
+                            )
+                        }
+                    } else if (uiState.books.isEmpty()) {
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()

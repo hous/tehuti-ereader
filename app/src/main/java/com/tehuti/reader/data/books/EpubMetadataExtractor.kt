@@ -24,6 +24,8 @@ class EpubMetadataExtractor @Inject constructor(
                 author = publication.metadata.authors.firstOrNull()?.localizedName?.string,
                 cover = publication.cover(),
             )
+        } catch (e: Exception) {
+            null
         } finally {
             publication.close()
         }
