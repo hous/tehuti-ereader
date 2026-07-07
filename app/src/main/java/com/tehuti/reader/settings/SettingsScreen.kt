@@ -1,5 +1,7 @@
 package com.tehuti.reader.settings
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -7,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -19,6 +22,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -32,6 +36,15 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val settings by viewModel.settings.collectAsState()
+    val booksFolderName by viewModel.booksFolderName.collectAsState()
+
+    val folderPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree(),
+    ) { uri ->
+        if (uri != null) {
+            viewModel.onBooksFolderPicked(uri)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -46,6 +59,21 @@ fun SettingsScreen(
         },
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues).padding(24.dp)) {
+            Text("Books folder", style = MaterialTheme.typography.bodyLarge)
+            Row(
+                modifier = Modifier.padding(top = 8.dp, bottom = 24.dp).fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = booksFolderName ?: "Not selected",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.weight(1f),
+                )
+                Button(onClick = { folderPickerLauncher.launch(null) }) {
+                    Text("Change")
+                }
+            }
+
             Text("Text size: ${settings.fontSizePercent}%", style = MaterialTheme.typography.bodyLarge)
             Slider(
                 value = settings.fontSizePercent.toFloat(),

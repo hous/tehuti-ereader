@@ -28,4 +28,6 @@ class BooksDirectoryAccess @Inject constructor(
     }
 
     fun documentFileFor(treeUri: Uri): DocumentFile? = DocumentFile.fromTreeUri(context, treeUri)
+
+    fun displayNameFor(treeUri: Uri): String? = documentFileFor(treeUri)?.name
 }
