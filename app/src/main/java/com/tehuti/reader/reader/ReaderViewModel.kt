@@ -68,6 +68,11 @@ class ReaderViewModel @Inject constructor(
     private val _returnLocator = MutableStateFlow<Locator?>(null)
     val returnLocator: StateFlow<Locator?> = _returnLocator
 
+    // The anchor's progression, surfaced so the progress bar can always show a bookmark
+    // for "the earliest point you've actually read to" — not just when canReturnToPosition.
+    private val _bookmarkProgression = MutableStateFlow<Float?>(null)
+    val bookmarkProgression: StateFlow<Float?> = _bookmarkProgression
+
     init {
         viewModelScope.launch {
             val book = bookDao.getById(bookId)
@@ -83,6 +88,7 @@ class ReaderViewModel @Inject constructor(
                 ?.let { runCatching { Locator.fromJSON(JSONObject(it.locatorJson)) }.getOrNull() }
             anchorLocator = savedLocator
             previousProgression = savedLocator?.locations?.totalProgression
+            _bookmarkProgression.value = savedLocator?.locations?.totalProgression?.toFloat()
 
             _uiState.value = ReaderUiState.Ready(
                 fragmentClass = readerEngine.fragmentClass,
@@ -131,13 +137,13 @@ class ReaderViewModel @Inject constructor(
             // First position, backward navigation, or a deliberate jump (e.g. dragging the
             // progress bar): treat wherever the reader landed as their real position.
             forwardStreak = 0
-            anchorLocator = locator
+            setAnchor(locator)
             _returnLocator.value = null
         } else {
             // A small forward step, e.g. a single page-turn tap.
             forwardStreak++
             if (forwardStreak <= FORWARD_STREAK_BEFORE_RETURN - 1) {
-                anchorLocator = locator
+                setAnchor(locator)
             } else {
                 _returnLocator.value = anchorLocator
             }
@@ -159,6 +165,11 @@ class ReaderViewModel @Inject constructor(
         val locator = _returnLocator.value
         _returnLocator.value = null
         return locator
+    }
+
+    private fun setAnchor(locator: Locator) {
+        anchorLocator = locator
+        _bookmarkProgression.value = locator.locations.totalProgression?.toFloat()
     }
 
     override fun onCleared() {

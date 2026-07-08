@@ -181,10 +181,12 @@ private fun ReaderContent(
     }
 
     val returnLocator by viewModel.returnLocator.collectAsState()
+    val bookmarkProgression by viewModel.bookmarkProgression.collectAsState()
 
     if (chromeVisible) {
         ReaderChrome(
             progression = progression,
+            bookmarkProgression = bookmarkProgression,
             canReturnToPosition = returnLocator != null,
             onBack = onBack,
             onSettings = onSettings,
