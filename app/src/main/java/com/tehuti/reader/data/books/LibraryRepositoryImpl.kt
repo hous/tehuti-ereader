@@ -91,4 +91,6 @@ private fun BookWithProgression.toDomain(): Book = Book(
     author = book.author,
     coverPath = book.coverPath,
     progression = progression,
+    addedAt = book.addedAt,
+    lastOpenedAt = book.lastOpenedAt,
 )

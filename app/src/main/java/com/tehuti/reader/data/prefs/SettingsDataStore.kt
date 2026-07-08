@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.tehuti.reader.domain.model.AppFontFamily
 import com.tehuti.reader.domain.model.AppTheme
+import com.tehuti.reader.domain.model.LibrarySortOrder
 import com.tehuti.reader.domain.model.ReaderSettings
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -27,6 +28,7 @@ class SettingsDataStore @Inject constructor(
         val FONT_SIZE_PERCENT = intPreferencesKey("font_size_percent")
         val FONT_FAMILY = stringPreferencesKey("font_family")
         val THEME = stringPreferencesKey("theme")
+        val LIBRARY_SORT_ORDER = stringPreferencesKey("library_sort_order")
     }
 
     val booksTreeUri: Flow<String?> = context.dataStore.data.map { it[Keys.BOOKS_TREE_URI] }
@@ -55,5 +57,14 @@ class SettingsDataStore @Inject constructor(
 
     suspend fun setTheme(theme: AppTheme) {
         context.dataStore.edit { it[Keys.THEME] = theme.name }
+    }
+
+    val librarySortOrder: Flow<LibrarySortOrder> = context.dataStore.data.map { prefs ->
+        prefs[Keys.LIBRARY_SORT_ORDER]?.let { runCatching { LibrarySortOrder.valueOf(it) }.getOrNull() }
+            ?: LibrarySortOrder.LAST_READ
+    }
+
+    suspend fun setLibrarySortOrder(order: LibrarySortOrder) {
+        context.dataStore.edit { it[Keys.LIBRARY_SORT_ORDER] = order.name }
     }
 }

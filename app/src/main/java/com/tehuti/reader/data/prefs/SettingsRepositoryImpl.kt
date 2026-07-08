@@ -2,6 +2,7 @@ package com.tehuti.reader.data.prefs
 
 import com.tehuti.reader.domain.model.AppFontFamily
 import com.tehuti.reader.domain.model.AppTheme
+import com.tehuti.reader.domain.model.LibrarySortOrder
 import com.tehuti.reader.domain.model.ReaderSettings
 import com.tehuti.reader.domain.repo.SettingsRepository
 import kotlinx.coroutines.flow.Flow
@@ -23,5 +24,11 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun setTheme(theme: AppTheme) {
         settingsDataStore.setTheme(theme)
+    }
+
+    override val librarySortOrder: Flow<LibrarySortOrder> = settingsDataStore.librarySortOrder
+
+    override suspend fun setLibrarySortOrder(order: LibrarySortOrder) {
+        settingsDataStore.setLibrarySortOrder(order)
     }
 }

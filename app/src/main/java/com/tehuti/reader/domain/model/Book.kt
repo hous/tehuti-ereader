@@ -8,4 +8,6 @@ data class Book(
     val author: String? = null,
     val coverPath: String? = null,
     val progression: Float? = null,
+    val addedAt: Long = 0L,
+    val lastOpenedAt: Long? = null,
 )

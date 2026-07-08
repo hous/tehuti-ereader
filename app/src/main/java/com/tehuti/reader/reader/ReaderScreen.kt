@@ -180,9 +180,12 @@ private fun ReaderContent(
         )
     }
 
+    val returnLocator by viewModel.returnLocator.collectAsState()
+
     if (chromeVisible) {
         ReaderChrome(
             progression = progression,
+            canReturnToPosition = returnLocator != null,
             onBack = onBack,
             onSettings = onSettings,
             onSeek = { fraction ->
@@ -190,6 +193,9 @@ private fun ReaderContent(
                     val locator = viewModel.findLocatorForProgression(fraction)
                     if (locator != null) navigator?.go(locator, true)
                 }
+            },
+            onReturnToPosition = {
+                viewModel.returnToSavedPosition()?.let { navigator?.go(it, true) }
             },
         )
     }

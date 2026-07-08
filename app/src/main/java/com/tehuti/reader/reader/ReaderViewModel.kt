@@ -36,6 +36,9 @@ sealed interface ReaderUiState {
 
 data class LookupRequest(val type: LookupType, val word: String)
 
+private const val FORWARD_STREAK_BEFORE_RETURN = 3
+private const val DELIBERATE_JUMP_THRESHOLD = 0.03
+
 @HiltViewModel
 class ReaderViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -56,6 +59,15 @@ class ReaderViewModel @Inject constructor(
     private val _lookupRequest = MutableStateFlow<LookupRequest?>(null)
     val lookupRequest: StateFlow<LookupRequest?> = _lookupRequest
 
+    // Tracks the reader's "real" position separately from wherever the user has tapped ahead to,
+    // so casually browsing forward doesn't silently overwrite the bookmark they'll want back.
+    private var anchorLocator: Locator? = null
+    private var previousProgression: Double? = null
+    private var forwardStreak = 0
+
+    private val _returnLocator = MutableStateFlow<Locator?>(null)
+    val returnLocator: StateFlow<Locator?> = _returnLocator
+
     init {
         viewModelScope.launch {
             val book = bookDao.getById(bookId)
@@ -69,6 +81,8 @@ class ReaderViewModel @Inject constructor(
 
             val savedLocator = positionRepository.getPosition(bookId)
                 ?.let { runCatching { Locator.fromJSON(JSONObject(it.locatorJson)) }.getOrNull() }
+            anchorLocator = savedLocator
+            previousProgression = savedLocator?.locations?.totalProgression
 
             _uiState.value = ReaderUiState.Ready(
                 fragmentClass = readerEngine.fragmentClass,
@@ -104,15 +118,47 @@ class ReaderViewModel @Inject constructor(
     }
 
     fun onLocatorChanged(locator: Locator) {
+        val newProgression = locator.locations.totalProgression ?: 0.0
+        val delta = previousProgression?.let { newProgression - it }
+        previousProgression = newProgression
+
+        // Readium's navigator sometimes re-emits the exact same locator (e.g. on settle after
+        // a page turn) with no actual movement — that's not a page turn either way, so leave
+        // the streak/anchor untouched rather than treating it as "moved backward."
+        if (delta == 0.0) return
+
+        if (delta == null || delta < 0.0 || delta > DELIBERATE_JUMP_THRESHOLD) {
+            // First position, backward navigation, or a deliberate jump (e.g. dragging the
+            // progress bar): treat wherever the reader landed as their real position.
+            forwardStreak = 0
+            anchorLocator = locator
+            _returnLocator.value = null
+        } else {
+            // A small forward step, e.g. a single page-turn tap.
+            forwardStreak++
+            if (forwardStreak <= FORWARD_STREAK_BEFORE_RETURN - 1) {
+                anchorLocator = locator
+            } else {
+                _returnLocator.value = anchorLocator
+            }
+        }
+
+        val toSave = anchorLocator ?: locator
         viewModelScope.launch {
             positionRepository.savePosition(
                 ReadingPosition(
                     bookId = bookId,
-                    locatorJson = locator.toJSON().toString(),
-                    progression = locator.locations.totalProgression?.toFloat() ?: 0f,
+                    locatorJson = toSave.toJSON().toString(),
+                    progression = toSave.locations.totalProgression?.toFloat() ?: 0f,
                 ),
             )
         }
+    }
+
+    fun returnToSavedPosition(): Locator? {
+        val locator = _returnLocator.value
+        _returnLocator.value = null
+        return locator
     }
 
     override fun onCleared() {

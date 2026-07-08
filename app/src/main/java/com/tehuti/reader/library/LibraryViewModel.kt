@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tehuti.reader.data.books.BooksDirectoryAccess
 import com.tehuti.reader.domain.model.Book
+import com.tehuti.reader.domain.model.LibrarySortOrder
 import com.tehuti.reader.domain.repo.LibraryRepository
+import com.tehuti.reader.domain.repo.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +25,7 @@ data class LibraryUiState(
     val isRefreshing: Boolean = false,
     val hasBooksFolder: Boolean = false,
     val books: List<Book> = emptyList(),
+    val sortOrder: LibrarySortOrder = LibrarySortOrder.LAST_READ,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -30,12 +33,13 @@ data class LibraryUiState(
 class LibraryViewModel @Inject constructor(
     private val booksDirectoryAccess: BooksDirectoryAccess,
     private val libraryRepository: LibraryRepository,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
     private val isRefreshing = MutableStateFlow(false)
     private var currentTreeUri: Uri? = null
 
-    val uiState: StateFlow<LibraryUiState> = booksDirectoryAccess.booksTreeUri
+    private val booksState: StateFlow<LibraryUiState> = booksDirectoryAccess.booksTreeUri
         .distinctUntilChanged()
         .flatMapLatest { treeUri ->
             currentTreeUri = treeUri
@@ -55,6 +59,12 @@ class LibraryViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LibraryUiState())
 
+    val uiState: StateFlow<LibraryUiState> = booksState
+        .combine(settingsRepository.librarySortOrder) { state, sortOrder ->
+            state.copy(books = sortBooks(state.books, sortOrder), sortOrder = sortOrder)
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LibraryUiState())
+
     fun onFolderPicked(uri: Uri) {
         viewModelScope.launch {
             booksDirectoryAccess.persistTreeUri(uri)
@@ -66,6 +76,10 @@ class LibraryViewModel @Inject constructor(
         viewModelScope.launch { rescan(treeUri) }
     }
 
+    fun setSortOrder(order: LibrarySortOrder) {
+        viewModelScope.launch { settingsRepository.setLibrarySortOrder(order) }
+    }
+
     private suspend fun rescan(treeUri: Uri) {
         isRefreshing.value = true
         try {
@@ -74,4 +88,14 @@ class LibraryViewModel @Inject constructor(
             isRefreshing.value = false
         }
     }
+
+    private fun sortBooks(books: List<Book>, sortOrder: LibrarySortOrder): List<Book> =
+        when (sortOrder) {
+            LibrarySortOrder.LAST_READ ->
+                books.sortedWith(compareByDescending<Book> { it.lastOpenedAt ?: -1L }.thenBy { it.title.lowercase() })
+            LibrarySortOrder.TITLE ->
+                books.sortedBy { it.title.lowercase() }
+            LibrarySortOrder.DATE_ADDED ->
+                books.sortedWith(compareByDescending<Book> { it.addedAt }.thenBy { it.title.lowercase() })
+        }
 }
