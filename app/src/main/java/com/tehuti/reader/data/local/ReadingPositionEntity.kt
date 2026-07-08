@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 data class ReadingPositionEntity(
     @PrimaryKey val bookId: String,
     val locatorJson: String,
+    val anchorLocatorJson: String? = null,
     val progression: Float,
     val updatedAt: Long,
 )

@@ -88,6 +88,10 @@ dependencies {
     implementation(libs.readium.streamer)
     implementation(libs.readium.navigator)
 
+    // Spoiler-safe AI reading companion: on-device text extraction + Gemini Nano.
+    implementation(libs.jsoup)
+    implementation(libs.mlkit.genai.prompt)
+
     coreLibraryDesugaring(libs.android.desugarJdkLibs)
 
     testImplementation(libs.junit)

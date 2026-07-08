@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -55,8 +56,10 @@ fun ReaderChrome(
     progression: Float,
     bookmarkProgression: Float?,
     canReturnToPosition: Boolean,
+    showAiSummary: Boolean,
     onBack: () -> Unit,
     onSettings: () -> Unit,
+    onSummarize: () -> Unit,
     onSeek: (Float) -> Unit,
     onReturnToPosition: () -> Unit,
     modifier: Modifier = Modifier,
@@ -85,8 +88,15 @@ fun ReaderChrome(
             IconButton(onClick = onBack) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to library")
             }
-            IconButton(onClick = onSettings) {
-                Icon(Icons.Filled.Settings, contentDescription = "Settings")
+            Row {
+                if (showAiSummary) {
+                    IconButton(onClick = onSummarize) {
+                        Icon(Icons.Filled.AutoAwesome, contentDescription = "Summarize what I've read")
+                    }
+                }
+                IconButton(onClick = onSettings) {
+                    Icon(Icons.Filled.Settings, contentDescription = "Settings")
+                }
             }
         }
 

@@ -3,6 +3,7 @@ package com.tehuti.reader.domain.model
 enum class LookupType {
     DICTIONARY,
     WIKIPEDIA,
+    AI_EXPLAIN,
 }
 
 sealed interface LookupResult {
@@ -19,5 +20,10 @@ sealed interface LookupResult {
         val extract: String,
         val thumbnailUrl: String?,
         val pageUrl: String?,
+    ) : LookupResult
+
+    data class AiExplanation(
+        val term: String,
+        val explanation: String,
     ) : LookupResult
 }

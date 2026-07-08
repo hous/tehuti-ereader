@@ -73,7 +73,7 @@ fun LibraryScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "𓅝 tehuti",
+                        text = "𓅞 tehuti",
                         fontFamily = FontFamily.Serif,
                         fontStyle = FontStyle.Italic,
                         fontSize = 26.sp,

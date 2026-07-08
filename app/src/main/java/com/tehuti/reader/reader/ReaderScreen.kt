@@ -36,6 +36,7 @@ import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.commitNow
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tehuti.reader.domain.model.AppTheme
+import com.tehuti.reader.reader.ai.BookSummaryDialog
 import com.tehuti.reader.reader.lookup.WordLookupDialog
 import com.tehuti.reader.reader.overlay.ReaderChrome
 import com.tehuti.reader.settings.SettingsViewModel
@@ -182,14 +183,17 @@ private fun ReaderContent(
 
     val returnLocator by viewModel.returnLocator.collectAsState()
     val bookmarkProgression by viewModel.bookmarkProgression.collectAsState()
+    val aiSummaryEnabled by viewModel.aiSummaryEnabled.collectAsState()
 
     if (chromeVisible) {
         ReaderChrome(
             progression = progression,
             bookmarkProgression = bookmarkProgression,
             canReturnToPosition = returnLocator != null,
+            showAiSummary = aiSummaryEnabled,
             onBack = onBack,
             onSettings = onSettings,
+            onSummarize = viewModel::requestSummary,
             onSeek = { fraction ->
                 coroutineScope.launch {
                     val locator = viewModel.findLocatorForProgression(fraction)
@@ -207,7 +211,16 @@ private fun ReaderContent(
         WordLookupDialog(
             type = request.type,
             word = request.word,
+            context = request.context,
             onDismiss = viewModel::clearLookupRequest,
+        )
+    }
+
+    val summaryRequest by viewModel.summaryRequest.collectAsState()
+    summaryRequest?.let { excerpt ->
+        BookSummaryDialog(
+            excerpt = excerpt,
+            onDismiss = viewModel::clearSummaryRequest,
         )
     }
 }

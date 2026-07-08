@@ -13,5 +13,6 @@ interface ReaderEngine {
         publication: Publication,
         initialLocator: Locator?,
         onSelectionAction: (LookupType) -> Unit,
+        isAiExplainAvailable: () -> Boolean = { false },
     ): FragmentFactory
 }

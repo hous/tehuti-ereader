@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Overrides Readium's default readium_navigator_epub_vertical_padding (40dp), which
+         reserves symmetric top/bottom space assuming a permanent bottom bar. Our chrome
+         (including the progress bar) is a translucent overlay, not a layout reservation,
+         so text can use nearly the full viewport height. -->
+    <dimen name="readium_navigator_epub_vertical_padding">12dp</dimen>
+</resources>

@@ -18,6 +18,7 @@ class PositionRepositoryImpl @Inject constructor(
             ReadingPositionEntity(
                 bookId = position.bookId,
                 locatorJson = position.locatorJson,
+                anchorLocatorJson = position.anchorLocatorJson,
                 progression = position.progression,
                 updatedAt = System.currentTimeMillis(),
             ),
@@ -28,5 +29,6 @@ class PositionRepositoryImpl @Inject constructor(
 private fun ReadingPositionEntity.toDomain(): ReadingPosition = ReadingPosition(
     bookId = bookId,
     locatorJson = locatorJson,
+    anchorLocatorJson = anchorLocatorJson,
     progression = progression,
 )

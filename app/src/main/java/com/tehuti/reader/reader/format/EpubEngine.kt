@@ -17,6 +17,7 @@ import javax.inject.Inject
 
 private const val MENU_ID_DICTIONARY = 1001
 private const val MENU_ID_WIKIPEDIA = 1002
+private const val MENU_ID_EXPLAIN = 1003
 
 @OptIn(ExperimentalReadiumApi::class)
 class EpubEngine @Inject constructor() : ReaderEngine {
@@ -27,6 +28,7 @@ class EpubEngine @Inject constructor() : ReaderEngine {
         publication: Publication,
         initialLocator: Locator?,
         onSelectionAction: (LookupType) -> Unit,
+        isAiExplainAvailable: () -> Boolean,
     ): FragmentFactory {
         val locator = initialLocator ?: publication.locatorFromLink(publication.readingOrder.first())
         val factory = EpubNavigatorFactory(publication)
@@ -43,6 +45,11 @@ class EpubEngine @Inject constructor() : ReaderEngine {
                     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
                         menu.add(0, MENU_ID_DICTIONARY, 0, "Dictionary")
                         menu.add(0, MENU_ID_WIKIPEDIA, 0, "Wikipedia")
+                        // Only offered when on-device AI is actually usable on this device —
+                        // absent entirely rather than present-then-erroring.
+                        if (isAiExplainAvailable()) {
+                            menu.add(0, MENU_ID_EXPLAIN, 0, "[AI] Explain the context")
+                        }
                         return true
                     }
 
@@ -52,6 +59,7 @@ class EpubEngine @Inject constructor() : ReaderEngine {
                         val type = when (item.itemId) {
                             MENU_ID_DICTIONARY -> LookupType.DICTIONARY
                             MENU_ID_WIKIPEDIA -> LookupType.WIKIPEDIA
+                            MENU_ID_EXPLAIN -> LookupType.AI_EXPLAIN
                             else -> return false
                         }
                         onSelectionAction(type)

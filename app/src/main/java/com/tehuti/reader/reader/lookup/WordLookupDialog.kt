@@ -37,13 +37,14 @@ fun WordLookupDialog(
     type: LookupType,
     word: String,
     onDismiss: () -> Unit,
+    context: String? = null,
     viewModel: WordLookupViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val sheetState = rememberModalBottomSheetState()
 
     LaunchedEffect(type, word) {
-        viewModel.lookup(type, word)
+        viewModel.lookup(type, word, context)
     }
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
@@ -61,14 +62,31 @@ fun WordLookupDialog(
                     Text("Looking up “$word”…", modifier = Modifier.padding(top = 12.dp))
                 }
 
+                is LookupUiState.Downloading -> Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    CircularProgressIndicator(progress = { state.progress ?: 0f })
+                    Text(
+                        "Setting up on-device AI (first use)…",
+                        modifier = Modifier.padding(top = 12.dp),
+                    )
+                }
+
                 is LookupUiState.NotFound -> Text(
                     text = "No results found for “$word”.",
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+
+                is LookupUiState.Unavailable -> Text(
+                    text = state.reason,
                     style = MaterialTheme.typography.bodyLarge,
                 )
 
                 is LookupUiState.Success -> when (val result = state.result) {
                     is LookupResult.Dictionary -> DictionaryContent(result)
                     is LookupResult.Wikipedia -> WikipediaContent(result)
+                    is LookupResult.AiExplanation -> AiExplanationContent(result)
                 }
             }
         }
@@ -96,6 +114,18 @@ private fun DictionaryContent(result: LookupResult.Dictionary) {
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun AiExplanationContent(result: LookupResult.AiExplanation) {
+    Column {
+        Text(text = result.term, style = MaterialTheme.typography.headlineSmall)
+        Text(
+            text = result.explanation,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(top = 8.dp),
+        )
     }
 }
 
