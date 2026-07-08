@@ -48,7 +48,7 @@ class EpubEngine @Inject constructor() : ReaderEngine {
                         // Only offered when on-device AI is actually usable on this device —
                         // absent entirely rather than present-then-erroring.
                         if (isAiExplainAvailable()) {
-                            menu.add(0, MENU_ID_EXPLAIN, 0, "[AI] Explain the context")
+                            menu.add(0, MENU_ID_EXPLAIN, 0, "✨ Explain the context")
                         }
                         return true
                     }

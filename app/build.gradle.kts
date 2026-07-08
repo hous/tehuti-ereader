@@ -6,6 +6,23 @@ plugins {
     alias(libs.plugins.hilt)
 }
 
+// Cloud AI fallback config: `.env.default` (committed) provides safe defaults — an empty API
+// key means CloudFallbackEngine.isConfigured() is false and the app degrades gracefully.
+// `.env` (gitignored) overrides it locally with a real key. Neither file is ever required to
+// exist except `.env.default`.
+fun loadEnvFile(file: File): Map<String, String> {
+    if (!file.exists()) return emptyMap()
+    return file.readLines()
+        .map { it.trim() }
+        .filter { it.isNotEmpty() && !it.startsWith("#") && it.contains("=") }
+        .associate { line ->
+            val (key, value) = line.split("=", limit = 2)
+            key.trim() to value.trim()
+        }
+}
+
+val envVars = loadEnvFile(rootProject.file(".env.default")) + loadEnvFile(rootProject.file(".env"))
+
 android {
     namespace = "com.tehuti.reader"
     compileSdk = 37
@@ -18,6 +35,9 @@ android {
         versionName = "0.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "CLOUD_AI_API_KEY", "\"${envVars["CLOUD_AI_API_KEY"].orEmpty()}\"")
+        buildConfigField("String", "CLOUD_AI_MODEL", "\"${envVars["CLOUD_AI_MODEL"] ?: "gemini-2.5-flash"}\"")
     }
 
     buildTypes {
@@ -35,6 +55,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {

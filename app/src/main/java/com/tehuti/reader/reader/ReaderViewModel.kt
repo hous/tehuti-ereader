@@ -40,6 +40,8 @@ sealed interface ReaderUiState {
 
 data class LookupRequest(val type: LookupType, val word: String, val context: String? = null)
 
+data class SummaryRequest(val quickExcerpt: String, val fullExcerpt: String)
+
 private const val FORWARD_STREAK_TO_CONFIRM = 4
 private const val DELIBERATE_JUMP_THRESHOLD = 0.03
 private const val SAME_SPOT_EPSILON = 0.005
@@ -72,8 +74,8 @@ class ReaderViewModel @Inject constructor(
     private val _aiSummaryEnabled = MutableStateFlow(false)
     val aiSummaryEnabled: StateFlow<Boolean> = _aiSummaryEnabled
 
-    private val _summaryRequest = MutableStateFlow<String?>(null)
-    val summaryRequest: StateFlow<String?> = _summaryRequest
+    private val _summaryRequest = MutableStateFlow<SummaryRequest?>(null)
+    val summaryRequest: StateFlow<SummaryRequest?> = _summaryRequest
 
     // The last position the reader "confirmed" by turning pages forward normally for
     // FORWARD_STREAK_TO_CONFIRM turns in a row. Jumping away from it (backward, or a big
@@ -161,11 +163,17 @@ class ReaderViewModel @Inject constructor(
     fun requestSummary() {
         viewModelScope.launch {
             val pub = publication ?: return@launch
-            _summaryRequest.value = BookTextExtractor.extractReadSoFar(
+            val quickExcerpt = BookTextExtractor.extractReadSoFar(
                 pub,
                 anchorLocator,
-                BookTextExtractor.SUMMARY_MAX_CHARS,
+                BookTextExtractor.QUICK_RECAP_MAX_CHARS,
             )
+            val fullExcerpt = BookTextExtractor.extractReadSoFar(
+                pub,
+                anchorLocator,
+                BookTextExtractor.FULL_RECAP_MAX_CHARS,
+            )
+            _summaryRequest.value = SummaryRequest(quickExcerpt, fullExcerpt)
         }
     }
 

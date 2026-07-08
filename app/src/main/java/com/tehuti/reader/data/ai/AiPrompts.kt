@@ -36,6 +36,30 @@ object AiPrompts {
         Summary of what has happened so far:
     """.trimIndent()
 
+    fun quickRecapPrompt(excerpt: String): String = """
+        You are a reading companion inside an e-book app. Below is the most recent stretch of
+        text the reader has read — roughly the last few pages, ending exactly at the point
+        they've reached. Nothing after that point is included, because it would be a spoiler.
+
+        Rules (follow strictly):
+        - Give a SHORT, punchy recap of only what just happened in this excerpt — 2-3
+          sentences, like a "previously, on..." reminder before they keep reading.
+        - Do not use any outside knowledge of this book, its author, or its plot — even if
+          you recognize it. Treat the excerpt as the only source of truth you have.
+        - Do not guess, infer, or speculate about anything that might happen later.
+        - The excerpt may start and end mid-scene — that's expected, since it's only the most
+          recent stretch of reading, not the whole book so far.
+        - If the excerpt is too short to say anything meaningful, say so in one short
+          sentence instead of inventing content.
+
+        EXCERPT:
+        ---
+        $excerpt
+        ---
+
+        Quick recap of what just happened:
+    """.trimIndent()
+
     fun explainTermPrompt(term: String, excerpt: String): String = """
         You are a reading companion inside an e-book app. The reader selected the word or
         name "$term" while reading. Below is the book's text from the beginning up to

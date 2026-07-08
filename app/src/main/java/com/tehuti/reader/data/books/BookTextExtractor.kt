@@ -20,8 +20,13 @@ object BookTextExtractor {
     // are a sliding window ending exactly at the boundary (never before it truncated away), so a
     // reader most of the way through a long novel gets a "recent context" excerpt rather than the
     // whole book so far — an accepted tradeoff of recomputing from scratch with no rolling cache.
-    const val SUMMARY_MAX_CHARS = 6_000
+    const val FULL_RECAP_MAX_CHARS = 6_000
     const val EXPLAIN_MAX_CHARS = 3_000
+
+    // A much smaller window for the "where you left off" quick recap — roughly the last handful
+    // of screens/pages, not the whole read-so-far excerpt, so it loads fast and reads like a
+    // "previously, on..." reminder rather than a full summary.
+    const val QUICK_RECAP_MAX_CHARS = 1_500
 
     suspend fun extractReadSoFar(publication: Publication, boundary: Locator?, maxChars: Int): String {
         if (boundary == null) return ""

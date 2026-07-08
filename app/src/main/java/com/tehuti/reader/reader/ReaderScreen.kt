@@ -217,9 +217,10 @@ private fun ReaderContent(
     }
 
     val summaryRequest by viewModel.summaryRequest.collectAsState()
-    summaryRequest?.let { excerpt ->
+    summaryRequest?.let { request ->
         BookSummaryDialog(
-            excerpt = excerpt,
+            quickExcerpt = request.quickExcerpt,
+            fullExcerpt = request.fullExcerpt,
             onDismiss = viewModel::clearSummaryRequest,
         )
     }

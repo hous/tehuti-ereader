@@ -1,6 +1,7 @@
 package com.tehuti.reader.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.tehuti.reader.data.ai.GeminiCloudApi
 import com.tehuti.reader.data.lookup.DictionaryApi
 import com.tehuti.reader.data.lookup.WikipediaApi
 import dagger.Module
@@ -11,6 +12,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
+import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -51,6 +53,16 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    @Named("gemini")
+    fun provideGeminiRetrofit(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+        .baseUrl("https://generativelanguage.googleapis.com/")
+        // Generation can take noticeably longer than a dictionary/Wikipedia lookup.
+        .client(okHttpClient.newBuilder().readTimeout(60, TimeUnit.SECONDS).build())
+        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+        .build()
+
+    @Provides
+    @Singleton
     fun provideDictionaryApi(@Named("dictionary") retrofit: Retrofit): DictionaryApi =
         retrofit.create(DictionaryApi::class.java)
 
@@ -58,4 +70,9 @@ object NetworkModule {
     @Singleton
     fun provideWikipediaApi(@Named("wikipedia") retrofit: Retrofit): WikipediaApi =
         retrofit.create(WikipediaApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideGeminiCloudApi(@Named("gemini") retrofit: Retrofit): GeminiCloudApi =
+        retrofit.create(GeminiCloudApi::class.java)
 }
