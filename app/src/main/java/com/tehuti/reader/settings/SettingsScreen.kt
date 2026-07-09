@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -39,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tehuti.reader.domain.model.AppFontFamily
 import com.tehuti.reader.domain.model.AppTheme
+import com.tehuti.reader.ui.blueLightFilter
 import com.tehuti.reader.ui.theme.TehutiInkDark
 import com.tehuti.reader.ui.theme.TehutiInkLight
 import com.tehuti.reader.ui.theme.TehutiInkSepia
@@ -95,7 +98,12 @@ fun SettingsScreen(
             )
         },
     ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues).padding(24.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+        ) {
             Text("Books folder", style = MaterialTheme.typography.bodyLarge)
             Row(
                 modifier = Modifier.padding(top = 8.dp, bottom = 24.dp).fillMaxWidth(),
@@ -125,12 +133,19 @@ fun SettingsScreen(
                 modifier = Modifier.padding(top = 8.dp, bottom = 16.dp),
             )
 
+            var filterLevel by remember(settings.blueLightFilter) {
+                mutableFloatStateOf(settings.blueLightFilter)
+            }
+
             val (previewBackground, previewInk) = settings.theme.previewColors()
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
                     .background(previewBackground)
+                    // Previews the blue light filter live while its slider below is dragged;
+                    // the whole app takes the new level on release.
+                    .blueLightFilter(filterLevel)
                     .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
                     .padding(20.dp),
             ) {
@@ -167,6 +182,25 @@ fun SettingsScreen(
                     )
                 }
             }
+
+            val filterLabel = if (filterLevel == 0f) "Off" else "${(filterLevel * 100).toInt()}%"
+            Text(
+                "Blue light filter: $filterLabel",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(top = 24.dp),
+            )
+            Slider(
+                value = filterLevel,
+                onValueChange = { filterLevel = it },
+                onValueChangeFinished = { viewModel.setBlueLightFilter(filterLevel) },
+                valueRange = 0f..1f,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+            Text(
+                "Warms and dims the screen for night reading. At maximum it goes far dimmer than the lowest screen brightness.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

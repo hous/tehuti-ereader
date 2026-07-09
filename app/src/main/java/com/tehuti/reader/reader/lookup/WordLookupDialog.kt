@@ -30,6 +30,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.tehuti.reader.domain.model.LookupResult
 import com.tehuti.reader.domain.model.LookupType
+import com.tehuti.reader.ui.LocalBlueLightFilterLevel
+import com.tehuti.reader.ui.blueLightFilter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,7 +49,12 @@ fun WordLookupDialog(
         viewModel.lookup(type, word, context)
     }
 
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        // The sheet is its own window, so the app-root blue light filter doesn't reach it.
+        modifier = Modifier.blueLightFilter(LocalBlueLightFilterLevel.current),
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()

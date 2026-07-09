@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -28,6 +29,7 @@ class SettingsDataStore @Inject constructor(
         val FONT_SIZE_PERCENT = intPreferencesKey("font_size_percent")
         val FONT_FAMILY = stringPreferencesKey("font_family")
         val THEME = stringPreferencesKey("theme")
+        val BLUE_LIGHT_FILTER = floatPreferencesKey("blue_light_filter")
         val LIBRARY_SORT_ORDER = stringPreferencesKey("library_sort_order")
     }
 
@@ -44,6 +46,7 @@ class SettingsDataStore @Inject constructor(
                 ?: AppFontFamily.SERIF,
             theme = prefs[Keys.THEME]?.let { runCatching { AppTheme.valueOf(it) }.getOrNull() }
                 ?: AppTheme.LIGHT,
+            blueLightFilter = (prefs[Keys.BLUE_LIGHT_FILTER] ?: 0f).coerceIn(0f, 1f),
         )
     }
 
@@ -57,6 +60,10 @@ class SettingsDataStore @Inject constructor(
 
     suspend fun setTheme(theme: AppTheme) {
         context.dataStore.edit { it[Keys.THEME] = theme.name }
+    }
+
+    suspend fun setBlueLightFilter(level: Float) {
+        context.dataStore.edit { it[Keys.BLUE_LIGHT_FILTER] = level.coerceIn(0f, 1f) }
     }
 
     val librarySortOrder: Flow<LibrarySortOrder> = context.dataStore.data.map { prefs ->

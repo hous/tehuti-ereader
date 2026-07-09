@@ -26,6 +26,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.tehuti.reader.ui.LocalBlueLightFilterLevel
+import com.tehuti.reader.ui.blueLightFilter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +46,12 @@ fun BookSummaryDialog(
         viewModel.loadQuickRecap(quickExcerpt)
     }
 
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        // The sheet is its own window, so the app-root blue light filter doesn't reach it.
+        modifier = Modifier.blueLightFilter(LocalBlueLightFilterLevel.current),
+    ) {
         // The sheet doesn't scroll its content by default, so a long recap (or the full recap
         // stacked below the quick one) could otherwise overflow past the bottom of the screen
         // with no way to reach it — this makes the whole body a finger-scrollable column.

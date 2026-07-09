@@ -26,6 +26,10 @@ class SettingsRepositoryImpl @Inject constructor(
         settingsDataStore.setTheme(theme)
     }
 
+    override suspend fun setBlueLightFilter(level: Float) {
+        settingsDataStore.setBlueLightFilter(level)
+    }
+
     override val librarySortOrder: Flow<LibrarySortOrder> = settingsDataStore.librarySortOrder
 
     override suspend fun setLibrarySortOrder(order: LibrarySortOrder) {

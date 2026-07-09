@@ -41,6 +41,10 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { settingsRepository.setTheme(theme) }
     }
 
+    fun setBlueLightFilter(level: Float) {
+        viewModelScope.launch { settingsRepository.setBlueLightFilter(level) }
+    }
+
     fun onBooksFolderPicked(uri: Uri) {
         viewModelScope.launch { booksDirectoryAccess.persistTreeUri(uri) }
     }

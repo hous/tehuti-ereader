@@ -11,6 +11,7 @@ interface SettingsRepository {
     suspend fun setFontSizePercent(percent: Int)
     suspend fun setFontFamily(fontFamily: AppFontFamily)
     suspend fun setTheme(theme: AppTheme)
+    suspend fun setBlueLightFilter(level: Float)
 
     val librarySortOrder: Flow<LibrarySortOrder>
     suspend fun setLibrarySortOrder(order: LibrarySortOrder)
