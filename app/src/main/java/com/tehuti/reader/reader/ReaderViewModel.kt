@@ -32,7 +32,10 @@ sealed interface ReaderUiState {
     data object Loading : ReaderUiState
     data class Ready(
         val fragmentClass: Class<out Fragment>,
-        val fragmentFactory: FragmentFactory,
+        // A provider rather than a fixed factory: the fragment is removed whenever the reader
+        // leaves composition (e.g. opening Settings) and re-created on return, and it must
+        // start at the latest reading position — not where the book was when first opened.
+        val fragmentFactory: () -> FragmentFactory,
         val title: String,
     ) : ReaderUiState
     data object Error : ReaderUiState
@@ -85,6 +88,9 @@ class ReaderViewModel @Inject constructor(
     private var previousProgression: Double? = null
     private var forwardStreak = 0
 
+    // The most recent position the navigator reported, used to seed a re-created fragment.
+    private var lastLocator: Locator? = null
+
     // Set whenever the reader jumps away from anchorLocator, so the UI can offer to jump back.
     private val _returnLocator = MutableStateFlow<Locator?>(null)
     val returnLocator: StateFlow<Locator?> = _returnLocator
@@ -116,6 +122,7 @@ class ReaderViewModel @Inject constructor(
             val savedAnchor = savedPosition?.anchorLocatorJson?.let(::parseLocatorJson) ?: savedLocator
             anchorLocator = savedAnchor
             previousProgression = savedLocator?.locations?.totalProgression
+            lastLocator = savedLocator
             _bookmarkProgression.value = savedAnchor?.locations?.totalProgression?.toFloat()
 
             aiExplainAvailable = availabilityDeferred.await() != AiAvailability.UNAVAILABLE
@@ -123,12 +130,14 @@ class ReaderViewModel @Inject constructor(
 
             _uiState.value = ReaderUiState.Ready(
                 fragmentClass = readerEngine.fragmentClass,
-                fragmentFactory = readerEngine.createFragmentFactory(
-                    pub,
-                    savedLocator,
-                    ::onSelectionAction,
-                    isAiExplainAvailable = { aiExplainAvailable },
-                ),
+                fragmentFactory = {
+                    readerEngine.createFragmentFactory(
+                        pub,
+                        lastLocator,
+                        ::onSelectionAction,
+                        isAiExplainAvailable = { aiExplainAvailable },
+                    )
+                },
                 title = pub.metadata.title ?: book.title,
             )
         }
@@ -190,6 +199,7 @@ class ReaderViewModel @Inject constructor(
     }
 
     fun onLocatorChanged(locator: Locator) {
+        lastLocator = locator
         val newProgression = locator.locations.totalProgression ?: 0.0
         val delta = previousProgression?.let { newProgression - it }
         previousProgression = newProgression

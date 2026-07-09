@@ -122,7 +122,7 @@ private fun ReaderContent(
 
     LaunchedEffect(state) {
         val fm = activity.supportFragmentManager
-        fm.fragmentFactory = state.fragmentFactory
+        fm.fragmentFactory = state.fragmentFactory()
         var fragment = fm.findFragmentById(containerId)
         if (fragment == null) {
             fm.commitNow { add(containerId, state.fragmentClass, null) }
