@@ -4,12 +4,11 @@ A minimalist e-book reader for Android. Point it at a folder of EPUB files
 and read. No accounts, no store, no clutter.
 
 - Full-screen, distraction-free reading
-- Tap the left or right edge to turn pages, the middle for controls
+- A spoiler-safe AI companion that can recap the story so far or explain
+  a character or term, using *only the pages you have already read*
 - Every book reopens exactly where you left off
 - Adjustable font, text size, and Light/Dark/Sepia themes
 - Long-press any word for a dictionary or Wikipedia lookup
-- A spoiler-safe AI companion that can recap the story so far or explain
-  a character or term, using only the pages you have already read
 
 ## Motivation
 
@@ -29,21 +28,24 @@ outside knowledge of the book, even if it's famous. No spoilers, ever.
 
 **Add books.** On first launch, pick the folder where your EPUB files live.
 Drop books into it however you like (file manager, USB, cloud sync), then
-pull down on the library to refresh. Files must be DRM-free EPUBs.
+pull down on the library to refresh. Files must be DRM-free EPUBs. Check out 
+[Project Gutenberg](https://www.gutenberg.org/)!
 
 **Read.** Tap the right side of the screen for the next page, the left for
 the previous one, the middle to show controls. The bottom bar seeks through
 the book; the top bar has Settings and your library.
 
 **Look things up.** Long-press a word and choose Dictionary, Wikipedia, or
-"Explain the context" for a spoiler-safe AI explanation.
+"✨ Explain" for a spoiler-safe AI summary.
 
 **Catch up.** Tap the sparkle icon in the controls for a quick recap of the
 last few pages, with an optional full recap of everything up to your
 bookmark.
 
 **Adjust.** Settings covers text size, font, theme, and which folder your
-books live in.
+books live in. Designed to be easy on the eyes for night-time reading, tehuti
+aims to minimize blue light and allows you to customize this to fit your 
+device's settings.
 
 There is nothing to save or close. Your position is stored as you read.
 
